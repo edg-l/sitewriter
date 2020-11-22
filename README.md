@@ -1,4 +1,8 @@
 # Sitewriter
+![Rust](https://github.com/edg-l/sitewriter/workflows/Rust/badge.svg)
+[![crates.io](http://meritbadge.herokuapp.com/sitewriter)](https://crates.io/crates/sitewriter)
+![License](https://img.shields.io/github/license/edg-l/sitewriter)
+
 A rust library to generate sitemaps.
 
 It uses the [quick-xml](https://github.com/tafia/quick-xml) so it should be fast.
