@@ -1,0 +1,18 @@
+[package]
+name = "sitewriter"
+version = "0.1.0"
+authors = ["Edgar L. <contact@edgarluque.com>"]
+edition = "2018"
+description = "A sitemap writing library."
+readme = "README.md"
+repository = "https://github.com/edg-l/sitewriter"
+license = "MIT"
+keywords = ["sitemap", "sitemapindex", "xml", "parser"]
+categories = ["parsing"]
+
+[features]
+default = ["chrono"]
+
+[dependencies]
+chrono = { version = "0.4", optional = true }
+quick-xml = "0.20"
