@@ -35,7 +35,7 @@ impl Display for ChangeFreq {
     }
 }
 
-/// Parent tag for each URL entry.
+/// A sitemap url entry.
 #[derive(Debug)]
 pub struct Url<'a> {
     /// URL of the page.
