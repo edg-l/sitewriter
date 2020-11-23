@@ -79,7 +79,7 @@ impl Display for ChangeFreq {
             ChangeFreq::Hourly => "hourly",
             ChangeFreq::Daily => "daily",
             ChangeFreq::Weekly => "weekly",
-            ChangeFreq::Monthly => "montly",
+            ChangeFreq::Monthly => "monthly",
             ChangeFreq::Yearly => "yearly",
             ChangeFreq::Never => "never",
         };
