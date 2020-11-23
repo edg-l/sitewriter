@@ -12,31 +12,31 @@
 //! 
 //! fn main() {
 //!     let mut sitemap = Sitemap::new();
-//!     sitemap.urls.push(Url::new("https://edgarluque.com/projects"));
+//!     sitemap.urls.push(Url::new("https://edgarluque.com/projects".to_owned()));
 //! 
 //!     sitemap.urls.push(Url {
-//!         loc: "https://edgarluque.com/",
+//!         loc: "https://edgarluque.com/".to_owned(),
 //!         changefreq: Some(ChangeFreq::Daily),
 //!         priority: Some(1.0),
 //!         lastmod: Some(Utc::now()),
 //!     });
 //! 
 //!     sitemap.urls.push(Url {
-//!         loc: "https://edgarluque.com/blog",
+//!         loc: "https://edgarluque.com/blog".to_owned(),
 //!         changefreq: Some(ChangeFreq::Weekly),
 //!         priority: Some(0.8),
 //!         lastmod: Some(Utc::now()),
 //!     });
 //! 
 //!     sitemap.urls.push(Url {
-//!         loc: "https://edgarluque.com/blog/sitewriter",
+//!         loc: "https://edgarluque.com/blog/sitewriter".to_owned(),
 //!         changefreq: Some(ChangeFreq::Never),
 //!         priority: Some(0.5),
 //!         lastmod: Some(Utc.ymd(2020, 11, 22).and_hms(15, 10, 15)),
 //!     });
 //! 
 //!     sitemap.urls.push(Url {
-//!         loc: "https://edgarluque.com/blog/some-future-post",
+//!         loc: "https://edgarluque.com/blog/some-future-post".to_owned(),
 //!         changefreq: Some(ChangeFreq::Never),
 //!         priority: Some(0.5),
 //!         lastmod: Some(Utc.from_utc_datetime(&Local.ymd(2020, 12, 5).and_hms(12, 30, 0).naive_utc())),
@@ -89,11 +89,11 @@ impl Display for ChangeFreq {
 
 /// A sitemap url entry.
 #[derive(Debug)]
-pub struct Url<'a> {
+pub struct Url {
     /// URL of the page.
     ///
     /// This URL must begin with the protocol (such as http) and end with a trailing slash, if your web server requires it. This value must be less than 2,048 characters.
-    pub loc: &'a str,
+    pub loc: String,
     #[cfg(feature = "chrono")]
     /// The date of last modification of the file.
     pub lastmod: Option<DateTime<Utc>>,
@@ -101,7 +101,7 @@ pub struct Url<'a> {
     /// The date of last modification of the file.
     ///
     /// This date should be in W3C Datetime format. This format allows you to omit the time portion, if desired, and use YYYY-MM-DD.
-    pub lastmod: Option<&'a str>,
+    pub lastmod: Option<String>,
     /// How frequently the page is likely to change.
     pub changefreq: Option<ChangeFreq>,
     /// The priority of this URL relative to other URLs on your site. Valid values range from 0.0 to 1.0.
@@ -110,9 +110,9 @@ pub struct Url<'a> {
     pub priority: Option<f32>,
 }
 
-impl<'a> Url<'a> {
+impl Url {
     /// Creates a url (sitemap entry) with only the required elements.
-    pub fn new(loc: &'a str) -> Self {
+    pub fn new(loc: String) -> Self {
         Self {
             loc,
             lastmod: None,
@@ -124,8 +124,8 @@ impl<'a> Url<'a> {
 
 /// Struct to hold the sitemap information.
 #[derive(Debug)]
-pub struct Sitemap<'a> {
-    pub urls: Vec<Url<'a>>,
+pub struct Sitemap {
+    pub urls: Vec<Url>,
 }
 
 fn write_tag<T: std::io::Write>(writer: &mut Writer<T>, tag: &str, text: &str) {
@@ -140,7 +140,7 @@ fn write_tag<T: std::io::Write>(writer: &mut Writer<T>, tag: &str, text: &str) {
         .expect(&format!("error opening {}", tag));
 }
 
-impl<'a> Sitemap<'a> {
+impl Sitemap {
     /// Create a new sitemap.    
     pub fn new() -> Self {
         Self {
@@ -171,7 +171,7 @@ impl<'a> Sitemap<'a> {
             writer
                 .write_event(Event::Start(BytesStart::borrowed_name(b"url")))
                 .expect("error opening url");
-            write_tag(&mut writer, "loc", url.loc);
+            write_tag(&mut writer, "loc", &url.loc);
 
             #[cfg(feature = "chrono")]
             {
@@ -205,14 +205,14 @@ impl<'a> Sitemap<'a> {
     }
 
     /// Generates the sitemap.
-    pub fn into_bytes(&self) -> Cow<'a, [u8]> {
+    pub fn into_bytes(&self) -> Cow<[u8]> {
         let inner = Cursor::new(Vec::new());
         let result = self.generate(inner);
         Cow::Owned(result.into_inner())
     }
 
     /// Generates the sitemap returning a string.
-    pub fn into_str(&self) -> Cow<'a, str> {
+    pub fn into_str(&self) -> Cow<str> {
         let bytes = self.into_bytes();
         let res = std::str::from_utf8(&bytes).expect("error parsing sitemap bytes to str").to_owned();
         Cow::Owned(res)
@@ -229,10 +229,10 @@ mod tests {
         use chrono::Utc;
 
         let mut sitemap = Sitemap::new();
-        sitemap.urls.push(Url::new("https://domain.com/"));
+        sitemap.urls.push(Url::new("https://domain.com/".to_owned()));
 
         sitemap.urls.push(Url {
-                loc: "https://domain.com/url",
+                loc: "https://domain.com/url".to_owned(),
                 changefreq: Some(ChangeFreq::Daily),
                 priority: Some(0.8),
                 lastmod: Some(Utc::now())
@@ -246,13 +246,13 @@ mod tests {
     #[test]
     fn it_works() {
         let mut sitemap = Sitemap::new();
-        sitemap.urls.push(Url::new("https://domain.com/"));
+        sitemap.urls.push(Url::new("https://domain.com/".to_owned()));
 
         sitemap.urls.push(Url {
-                loc: "https://domain.com/url",
+                loc: "https://domain.com/url".to_owned(),
                 changefreq: Some(ChangeFreq::Daily),
                 priority: Some(0.8),
-                lastmod: Some("2020-11-22"),
+                lastmod: Some("2020-11-22".to_owned()),
             }
         );
 
