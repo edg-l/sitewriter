@@ -1,10 +1,11 @@
 [package]
 name = "sitewriter"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["Edgar L. <contact@edgarluque.com>"]
 edition = "2018"
 description = "A sitemap writing library."
 readme = "README.md"
+documentation = "https://docs.rs/sitewriter"
 repository = "https://github.com/edg-l/sitewriter"
 license = "MIT"
 keywords = ["sitemap", "sitemapindex", "xml", "parser"]
