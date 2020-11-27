@@ -2,6 +2,7 @@
 ![Rust](https://github.com/edg-l/sitewriter/workflows/Rust/badge.svg)
 [![crates.io](http://meritbadge.herokuapp.com/sitewriter)](https://crates.io/crates/sitewriter)
 ![License](https://img.shields.io/github/license/edg-l/sitewriter)
+[![codecov](https://codecov.io/gh/edg-l/sitewriter/branch/master/graph/badge.svg?token=JKOQCRSCZU)](https://codecov.io/gh/edg-l/sitewriter)
 
 A rust library to generate sitemaps.
 
