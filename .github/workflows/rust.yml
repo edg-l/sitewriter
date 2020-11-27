@@ -16,13 +16,23 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install tarpaulin
-      run: cargo install cargo-tarpaulin
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
-    - name: Coverage
-      run: cargo tarpaulin --verbose --all-features --timeout 120 --out Xml
+
+    - name: Install stable toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Run cargo-tarpaulin
+      uses: actions-rs/tarpaulin@v0.1
+      with:
+        version: '0.16.0'
+
     - name: Upload to codecov.io
       uses: codecov/codecov-action@v1
+
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v1
+      with:
+        name: code-coverage-report
+        path: cobertura.xml
