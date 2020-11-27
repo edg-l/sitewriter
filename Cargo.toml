@@ -1,6 +1,6 @@
 [package]
 name = "sitewriter"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Edgar L. <contact@edgarluque.com>"]
 edition = "2018"
 description = "A sitemap writing library."

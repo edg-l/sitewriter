@@ -61,14 +61,21 @@ use std::io::Cursor;
 use std::borrow::Cow;
 
 /// How frequently the page is likely to change. This value provides general information to search engines and may not correlate exactly to how often they crawl the page.
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum ChangeFreq {
+    /// Changes each time it's accessed.
     Always,
+    /// Changes hourly.
     Hourly,
+    /// Changes daily.
     Daily,
+    /// Changes weekly.
     Weekly,
+    /// Changes monthly.
     Monthly,
+    /// Changes yearly.
     Yearly,
+    /// Describes archived URLs.
     Never,
 }
 
@@ -125,6 +132,7 @@ impl Url {
 /// Struct to hold the sitemap information.
 #[derive(Debug)]
 pub struct Sitemap {
+    /// The list of url entries.
     pub urls: Vec<Url>,
 }
 
@@ -240,6 +248,17 @@ mod tests {
         );
 
         sitemap.into_str();
+    }
+
+    #[test]
+    fn changefreq_is_valid() {
+        assert_eq!(format!("{}", ChangeFreq::Always), "always");
+        assert_eq!(format!("{}", ChangeFreq::Hourly), "hourly");
+        assert_eq!(format!("{}", ChangeFreq::Daily), "daily");
+        assert_eq!(format!("{}", ChangeFreq::Weekly), "weekly");
+        assert_eq!(format!("{}", ChangeFreq::Monthly), "monthly");
+        assert_eq!(format!("{}", ChangeFreq::Yearly), "yearly");
+        assert_eq!(format!("{}", ChangeFreq::Never), "never");
     }
 
     #[cfg(not(feature = "chrono"))]
