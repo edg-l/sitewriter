@@ -1,5 +1,5 @@
 //! ## A rust library to generate sitemaps.
-//! 
+//!
 //! It uses the [quick-xml](https://github.com/tafia/quick-xml) so it should be fast.
 //!
 //! To handle the [`Url::lastmod`] tag it uses [chrono](https://docs.rs/chrono/) but it can be disabled with `default-features = false`.
@@ -9,47 +9,46 @@
 //! ```rust
 //! use chrono::prelude::*;
 //! use sitewriter::*;
-//! 
+//!
 //! fn main() {
 //!     let mut sitemap = Sitemap::new();
 //!     sitemap.urls.push(Url::new("https://edgarluque.com/projects".to_owned()));
-//! 
+//!
 //!     sitemap.urls.push(Url {
 //!         loc: "https://edgarluque.com/".to_owned(),
 //!         changefreq: Some(ChangeFreq::Daily),
 //!         priority: Some(1.0),
 //!         lastmod: Some(Utc::now()),
 //!     });
-//! 
+//!
 //!     sitemap.urls.push(Url {
 //!         loc: "https://edgarluque.com/blog".to_owned(),
 //!         changefreq: Some(ChangeFreq::Weekly),
 //!         priority: Some(0.8),
 //!         lastmod: Some(Utc::now()),
 //!     });
-//! 
+//!
 //!     sitemap.urls.push(Url {
 //!         loc: "https://edgarluque.com/blog/sitewriter".to_owned(),
 //!         changefreq: Some(ChangeFreq::Never),
 //!         priority: Some(0.5),
 //!         lastmod: Some(Utc.ymd(2020, 11, 22).and_hms(15, 10, 15)),
 //!     });
-//! 
+//!
 //!     sitemap.urls.push(Url {
 //!         loc: "https://edgarluque.com/blog/some-future-post".to_owned(),
 //!         changefreq: Some(ChangeFreq::Never),
 //!         priority: Some(0.5),
 //!         lastmod: Some(Utc.from_utc_datetime(&Local.ymd(2020, 12, 5).and_hms(12, 30, 0).naive_utc())),
 //!     });
-//! 
-//! 
+//!
+//!
 //!     let result = sitemap.into_str();
 //!     println!("{}", result);
 //! }
 //! ```
 
-#[cfg(feature = "chrono")]
-use chrono::{DateTime, Utc, SecondsFormat};
+use chrono::{DateTime, SecondsFormat, Utc};
 
 use quick_xml::{
     events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event},
@@ -58,7 +57,6 @@ use quick_xml::{
 
 use std::fmt::Display;
 use std::io::Cursor;
-use std::borrow::Cow;
 
 /// How frequently the page is likely to change. This value provides general information to search engines and may not correlate exactly to how often they crawl the page.
 #[derive(Debug, Eq, PartialEq)]
@@ -101,14 +99,8 @@ pub struct Url {
     ///
     /// This URL must begin with the protocol (such as http) and end with a trailing slash, if your web server requires it. This value must be less than 2,048 characters.
     pub loc: String,
-    #[cfg(feature = "chrono")]
     /// The date of last modification of the file.
     pub lastmod: Option<DateTime<Utc>>,
-    #[cfg(not(feature = "chrono"))]
-    /// The date of last modification of the file.
-    ///
-    /// This date should be in W3C Datetime format. This format allows you to omit the time portion, if desired, and use YYYY-MM-DD.
-    pub lastmod: Option<String>,
     /// How frequently the page is likely to change.
     pub changefreq: Option<ChangeFreq>,
     /// The priority of this URL relative to other URLs on your site. Valid values range from 0.0 to 1.0.
@@ -124,7 +116,7 @@ impl Url {
             loc,
             lastmod: None,
             changefreq: None,
-            priority: None
+            priority: None,
         }
     }
 }
@@ -151,9 +143,7 @@ fn write_tag<T: std::io::Write>(writer: &mut Writer<T>, tag: &str, text: &str) {
 impl Sitemap {
     /// Create a new sitemap.    
     pub fn new() -> Self {
-        Self {
-            urls: Vec::new(),
-        }
+        Self { urls: Vec::new() }
     }
 
     /// Generates the sitemap using the provided writer.
@@ -181,17 +171,12 @@ impl Sitemap {
                 .expect("error opening url");
             write_tag(&mut writer, "loc", &url.loc);
 
-            #[cfg(feature = "chrono")]
-            {
-                if let Some(lastmod) = &url.lastmod {
-                    write_tag(&mut writer, "lastmod", &lastmod.to_rfc3339_opts(SecondsFormat::Secs, true));
-                }
-            }
-            #[cfg(not(feature = "chrono"))]
-            {
-                if let Some(lastmod) = &url.lastmod {
-                    write_tag(&mut writer, "lastmod", lastmod);
-                }
+            if let Some(lastmod) = &url.lastmod {
+                write_tag(
+                    &mut writer,
+                    "lastmod",
+                    &lastmod.to_rfc3339_opts(SecondsFormat::Secs, true),
+                );
             }
             if let Some(priority) = &url.priority {
                 write_tag(&mut writer, "priority", &format!("{:.1}", priority))
@@ -213,17 +198,17 @@ impl Sitemap {
     }
 
     /// Generates the sitemap.
-    pub fn into_bytes(&self) -> Cow<[u8]> {
+    pub fn into_bytes(self) -> Vec<u8> {
         let inner = Cursor::new(Vec::new());
         let result = self.generate(inner);
-        Cow::Owned(result.into_inner())
+        result.into_inner()
     }
 
     /// Generates the sitemap returning a string.
-    pub fn into_str(&self) -> Cow<str> {
+    pub fn into_str(self) -> String {
         let bytes = self.into_bytes();
-        let res = std::str::from_utf8(&bytes).expect("error parsing sitemap bytes to str").to_owned();
-        Cow::Owned(res)
+        let res = std::str::from_utf8(&bytes).expect("error parsing sitemap bytes to str");
+        res.to_owned()
     }
 }
 
@@ -237,15 +222,30 @@ mod tests {
         use chrono::Utc;
 
         let mut sitemap = Sitemap::new();
-        sitemap.urls.push(Url::new("https://domain.com/".to_owned()));
+        sitemap
+            .urls
+            .push(Url::new("https://domain.com/".to_owned()));
 
         sitemap.urls.push(Url {
-                loc: "https://domain.com/url".to_owned(),
-                changefreq: Some(ChangeFreq::Daily),
-                priority: Some(0.8),
-                lastmod: Some(Utc::now())
-            }
-        );
+            loc: "https://domain.com/url".to_owned(),
+            changefreq: Some(ChangeFreq::Daily),
+            priority: Some(0.8),
+            lastmod: Some(Utc::now()),
+        });
+
+        sitemap.urls.push(Url {
+            loc: "https://domain.com/aa".to_owned(),
+            changefreq: Some(ChangeFreq::Monthly),
+            priority: None,
+            lastmod: None,
+        });
+
+        sitemap.urls.push(Url {
+            loc: "https://domain.com/bb".to_owned(),
+            changefreq: None,
+            priority: None,
+            lastmod: None,
+        });
 
         sitemap.into_str();
     }
@@ -259,22 +259,5 @@ mod tests {
         assert_eq!(format!("{}", ChangeFreq::Monthly), "monthly");
         assert_eq!(format!("{}", ChangeFreq::Yearly), "yearly");
         assert_eq!(format!("{}", ChangeFreq::Never), "never");
-    }
-
-    #[cfg(not(feature = "chrono"))]
-    #[test]
-    fn it_works() {
-        let mut sitemap = Sitemap::new();
-        sitemap.urls.push(Url::new("https://domain.com/".to_owned()));
-
-        sitemap.urls.push(Url {
-                loc: "https://domain.com/url".to_owned(),
-                changefreq: Some(ChangeFreq::Daily),
-                priority: Some(0.8),
-                lastmod: Some("2020-11-22".to_owned()),
-            }
-        );
-
-        sitemap.into_str();
     }
 }

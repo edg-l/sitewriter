@@ -3,7 +3,9 @@ use sitewriter::*;
 
 fn main() {
     let mut sitemap = Sitemap::new();
-    sitemap.urls.push(Url::new("https://edgarluque.com/projects".to_owned()));
+    sitemap
+        .urls
+        .push(Url::new("https://edgarluque.com/projects".to_owned()));
 
     sitemap.urls.push(Url {
         loc: "https://edgarluque.com/".to_owned(),
@@ -30,9 +32,10 @@ fn main() {
         loc: "https://edgarluque.com/blog/some-future-post".to_owned(),
         changefreq: Some(ChangeFreq::Never),
         priority: Some(0.5),
-        lastmod: Some(Utc.from_utc_datetime(&Local.ymd(2020, 12, 5).and_hms(12, 30, 0).naive_utc())),
+        lastmod: Some(
+            Utc.from_utc_datetime(&Local.ymd(2020, 12, 5).and_hms(12, 30, 0).naive_utc()),
+        ),
     });
-
 
     let result = sitemap.into_str();
     println!("{}", result);
