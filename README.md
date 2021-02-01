@@ -1,15 +1,12 @@
 # Sitewriter
-![Rust](https://github.com/edg-l/sitewriter/workflows/Rust/badge.svg)
+[![Rust](https://github.com/edg-l/sitewriter/workflows/Rust/badge.svg)](https://github.com/edg-l/sitewriter/actions)
 [![crates.io](http://meritbadge.herokuapp.com/sitewriter)](https://crates.io/crates/sitewriter)
-![License](https://img.shields.io/github/license/edg-l/sitewriter)
+[![License](https://img.shields.io/github/license/edg-l/sitewriter)](https://github.com/edg-l/sitewriter/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/edg-l/sitewriter/branch/master/graph/badge.svg?token=JKOQCRSCZU)](https://codecov.io/gh/edg-l/sitewriter)
 
 A rust library to generate sitemaps.
 
 It uses the [quick-xml](https://github.com/tafia/quick-xml) so it should be fast.
-
-To handle the `lastmod` tag it uses [chrono](https://docs.rs/chrono/) but it can be disabled with `default-features = false`.
-
 
 ## Example
 
