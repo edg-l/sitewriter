@@ -240,6 +240,13 @@ mod tests {
             lastmod: None,
         });
 
+        sitemap.urls.push(Url {
+            loc: "https://domain.com/bb&id='<test>'",
+            changefreq: None,
+            priority: None,
+            lastmod: None,
+        });
+
         sitemap.into_str();
     }
 

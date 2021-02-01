@@ -37,6 +37,16 @@ fn main() {
         ),
     });
 
+    // Entity escaping
+    sitemap.urls.push(Url {
+        loc: "https://edgarluque.com/blog/test&id='<test>'",
+        changefreq: Some(ChangeFreq::Never),
+        priority: Some(0.5),
+        lastmod: Some(
+            Utc.from_utc_datetime(&Local.ymd(2020, 12, 5).and_hms(12, 30, 0).naive_utc()),
+        ),
+    });
+
     let result = sitemap.into_str();
     println!("{}", result);
 }
