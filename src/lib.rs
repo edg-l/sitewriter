@@ -8,43 +8,59 @@
 //! use chrono::prelude::*;
 //! use sitewriter::*;
 //!
-//! let mut sitemap = Sitemap::new();
-//! sitemap.urls.push(Url::new("https://edgarluque.com/projects"));
+//!    let urls = vec![
+//!        UrlEntryBuilder::default()
+//!            .loc("https://edgarluque.com/projects".parse().unwrap())
+//!            .build()
+//!            .unwrap(),
+//!        UrlEntry {
+//!            loc: "https://edgarluque.com/".parse().unwrap(),
+//!            changefreq: Some(ChangeFreq::Daily),
+//!            priority: Some(1.0),
+//!            lastmod: Some(Utc::now()),
+//!        },
+//!        UrlEntry {
+//!            loc: "https://edgarluque.com/blog".parse().unwrap(),
+//!            changefreq: Some(ChangeFreq::Weekly),
+//!            priority: Some(0.8),
+//!            lastmod: Some(Utc::now()),
+//!        },
+//!        UrlEntry {
+//!            loc: "https://edgarluque.com/blog/sitewriter".parse().unwrap(),
+//!            changefreq: Some(ChangeFreq::Never),
+//!            priority: Some(0.5),
+//!            lastmod: Some(Utc.ymd(2020, 11, 22).and_hms(15, 10, 15)),
+//!        },
+//!        UrlEntry {
+//!            loc: "https://edgarluque.com/blog/some-future-post"
+//!                .parse()
+//!                .unwrap(),
+//!            changefreq: Some(ChangeFreq::Never),
+//!            priority: Some(0.5),
+//!            lastmod: Some(
+//!                Utc.from_utc_datetime(&Local.ymd(2020, 12, 5).and_hms(12, 30, 0).naive_utc()),
+//!            ),
+//!        },
+//!        // Entity escaping
+//!        UrlEntry {
+//!            loc: "https://edgarluque.com/blog/test&id='<test>'"
+//!                .parse()
+//!                .unwrap(),
+//!            changefreq: Some(ChangeFreq::Never),
+//!            priority: Some(0.5),
+//!            lastmod: Some(
+//!                Utc.from_utc_datetime(&Local.ymd(2020, 12, 5).and_hms(12, 30, 0).naive_utc()),
+//!            ),
+//!        },
+//!    ];
 //!
-//! sitemap.urls.push(Url {
-//!     loc: "https://edgarluque.com/",
-//!     changefreq: Some(ChangeFreq::Daily),
-//!     priority: Some(1.0),
-//!     lastmod: Some(Utc::now()),
-//! });
-//!
-//! sitemap.urls.push(Url {
-//!     loc: "https://edgarluque.com/blog",
-//!     changefreq: Some(ChangeFreq::Weekly),
-//!     priority: Some(0.8),
-//!     lastmod: Some(Utc::now()),
-//! });
-//!
-//! sitemap.urls.push(Url {
-//!     loc: "https://edgarluque.com/blog/sitewriter",
-//!     changefreq: Some(ChangeFreq::Never),
-//!     priority: Some(0.5),
-//!     lastmod: Some(Utc.ymd(2020, 11, 22).and_hms(15, 10, 15)),
-//! });
-//!
-//! sitemap.urls.push(Url {
-//!     loc: "https://edgarluque.com/blog/some-future-post",
-//!     changefreq: Some(ChangeFreq::Never),
-//!     priority: Some(0.5),
-//!     lastmod: Some(Utc.from_utc_datetime(&Local.ymd(2020, 12, 5).and_hms(12, 30, 0).naive_utc())),
-//! });
-//!
-//!
-//! let result = sitemap.into_str();
-//! println!("{}", result);
+//!    let result = Sitemap::into_str(&urls).unwrap();
+//!    println!("{}", result);
 //! ```
 
 use chrono::{DateTime, SecondsFormat, Utc};
+use derive_builder::Builder;
+use url::Url;
 
 use quick_xml::{
     events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event},
@@ -55,7 +71,7 @@ use std::fmt::Display;
 use std::io::Cursor;
 
 /// How frequently the page is likely to change. This value provides general information to search engines and may not correlate exactly to how often they crawl the page.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub enum ChangeFreq {
     /// Changes each time it's accessed.
     Always,
@@ -89,42 +105,50 @@ impl Display for ChangeFreq {
 }
 
 /// A sitemap url entry.
-#[derive(Debug)]
-pub struct Url<'a> {
+#[derive(Debug, Clone, Builder)]
+#[builder(setter(strip_option))]
+pub struct UrlEntry {
     /// URL of the page.
     ///
     /// This URL must begin with the protocol (such as http) and end with a trailing slash, if your web server requires it. This value must be less than 2,048 characters.
-    pub loc: &'a str,
+    pub loc: Url,
     /// The date of last modification of the file.
+    #[builder(default)]
     pub lastmod: Option<DateTime<Utc>>,
     /// How frequently the page is likely to change.
+    #[builder(default)]
     pub changefreq: Option<ChangeFreq>,
     /// The priority of this URL relative to other URLs on your site. Valid values range from 0.0 to 1.0.
     ///
     /// This value does not affect how your pages are compared to pages on other sites—it only lets the search engines know which pages you deem most important for the crawlers.
+    #[builder(default)]
     pub priority: Option<f32>,
 }
 
-impl<'a> Url<'a> {
-    /// Creates a url (sitemap entry) with only the required elements.
-    pub fn new(loc: &'a str) -> Self {
+impl UrlEntry {
+    pub fn new(
+        loc: Url,
+        lastmod: Option<DateTime<Utc>>,
+        changefreq: Option<ChangeFreq>,
+        priority: Option<f32>,
+    ) -> Self {
         Self {
             loc,
-            lastmod: None,
-            changefreq: None,
-            priority: None,
+            lastmod,
+            changefreq,
+            priority,
         }
     }
 }
 
-/// Struct to hold the sitemap information.
+/// Struct that implements the sitemap generation function.
 #[derive(Debug)]
-pub struct Sitemap<'a> {
-    /// The list of url entries.
-    pub urls: Vec<Url<'a>>,
-}
+pub struct Sitemap;
 
-fn write_tag<T: std::io::Write>(writer: &mut Writer<T>, tag: &str, text: &str) {
+fn write_tag<T>(writer: &mut Writer<T>, tag: &str, text: &str)
+where
+    T: std::io::Write,
+{
     writer
         .write_event(Event::Start(BytesStart::borrowed_name(tag.as_bytes())))
         .expect(&format!("error opening {}", tag));
@@ -136,16 +160,12 @@ fn write_tag<T: std::io::Write>(writer: &mut Writer<T>, tag: &str, text: &str) {
         .expect(&format!("error opening {}", tag));
 }
 
-impl<'a> Sitemap<'a> {
-    /// Create a new sitemap.    
-    pub fn new() -> Self {
-        Self { urls: Vec::new() }
-    }
-
-    /// Generates the sitemap using the provided writer.
+impl Sitemap {
+    /// Generates the sitemap and saves it using the provided writer.
     ///
-    /// It's recommended to use [`Sitemap::into_bytes()`] or [`Sitemap::into_str()`]
-    pub fn generate<T>(&self, inner_writer: T) -> T
+    /// It's recommended to use [`Sitemap::into_bytes`] or [`Sitemap::into_str`] if you need a
+    /// String or a Vec<u8>.
+    pub fn generate<T>(inner_writer: T, urls: &[UrlEntry]) -> T
     where
         T: std::io::Write,
     {
@@ -161,23 +181,24 @@ impl<'a> Sitemap<'a> {
             .write_event(Event::Start(urlset))
             .expect("error opening urlset");
 
-        for url in self.urls.iter() {
+        for entry in urls {
             writer
                 .write_event(Event::Start(BytesStart::borrowed_name(b"url")))
                 .expect("error opening url");
-            write_tag(&mut writer, "loc", &url.loc);
 
-            if let Some(lastmod) = &url.lastmod {
+            write_tag(&mut writer, "loc", entry.loc.as_str());
+
+            if let Some(lastmod) = &entry.lastmod {
                 write_tag(
                     &mut writer,
                     "lastmod",
                     &lastmod.to_rfc3339_opts(SecondsFormat::Secs, true),
                 );
             }
-            if let Some(priority) = &url.priority {
+            if let Some(priority) = &entry.priority {
                 write_tag(&mut writer, "priority", &format!("{:.1}", priority))
             }
-            if let Some(changefreq) = &url.changefreq {
+            if let Some(changefreq) = &entry.changefreq {
                 write_tag(&mut writer, "changefreq", &changefreq.to_string());
             }
 
@@ -194,17 +215,17 @@ impl<'a> Sitemap<'a> {
     }
 
     /// Generates the sitemap.
-    pub fn into_bytes(self) -> Vec<u8> {
+    pub fn into_bytes(urls: &[UrlEntry]) -> Vec<u8> {
         let inner = Cursor::new(Vec::new());
-        let result = self.generate(inner);
+        let result = Sitemap::generate(inner, urls);
         result.into_inner()
     }
 
     /// Generates the sitemap returning a string.
-    pub fn into_str(self) -> String {
-        let bytes = self.into_bytes();
-        let res = std::str::from_utf8(&bytes).expect("error parsing sitemap bytes to str");
-        res.to_owned()
+    pub fn into_str(urls: &[UrlEntry]) -> Result<String, std::str::Utf8Error> {
+        let bytes = Sitemap::into_bytes(urls);
+        let res = std::str::from_utf8(&bytes)?;
+        Ok(res.to_owned())
     }
 }
 
@@ -216,38 +237,54 @@ mod tests {
     fn it_works() {
         use chrono::Utc;
 
-        let mut sitemap = Sitemap::new();
-        sitemap.urls.push(Url::new("https://domain.com/"));
+        let urls = vec![
+            // Builder pattern
+            UrlEntryBuilder::default()
+                .loc("https://domain.com".parse().unwrap())
+                .priority(0.2)
+                .build()
+                .unwrap(),
+            // Using new
+            UrlEntry::new(
+                "https://domain.com/some_url".parse().unwrap(),
+                None,
+                None,
+                None,
+            ),
+            // Initializing the struct.
+            UrlEntry {
+                loc: "https://domain.com/another".parse().unwrap(),
+                priority: None,
+                changefreq: Some(ChangeFreq::Always),
+                lastmod: None,
+            },
+            UrlEntry {
+                loc: "https://domain.com/url".parse().unwrap(),
+                changefreq: Some(ChangeFreq::Daily),
+                priority: Some(0.8),
+                lastmod: Some(Utc::now()),
+            },
+            UrlEntry {
+                loc: "https://domain.com/aa".parse().unwrap(),
+                changefreq: Some(ChangeFreq::Monthly),
+                priority: None,
+                lastmod: None,
+            },
+            UrlEntry {
+                loc: "https://domain.com/bb".parse().unwrap(),
+                changefreq: None,
+                priority: None,
+                lastmod: None,
+            },
+            UrlEntry {
+                loc: "https://domain.com/bb&id='<test>'".parse().unwrap(),
+                changefreq: None,
+                priority: Some(0.4),
+                lastmod: None,
+            },
+        ];
 
-        sitemap.urls.push(Url {
-            loc: "https://domain.com/url",
-            changefreq: Some(ChangeFreq::Daily),
-            priority: Some(0.8),
-            lastmod: Some(Utc::now()),
-        });
-
-        sitemap.urls.push(Url {
-            loc: "https://domain.com/aa",
-            changefreq: Some(ChangeFreq::Monthly),
-            priority: None,
-            lastmod: None,
-        });
-
-        sitemap.urls.push(Url {
-            loc: "https://domain.com/bb",
-            changefreq: None,
-            priority: None,
-            lastmod: None,
-        });
-
-        sitemap.urls.push(Url {
-            loc: "https://domain.com/bb&id='<test>'",
-            changefreq: None,
-            priority: None,
-            lastmod: None,
-        });
-
-        sitemap.into_str();
+        Sitemap::into_str(&urls).unwrap();
     }
 
     #[test]
