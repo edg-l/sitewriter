@@ -61,6 +61,7 @@
 use chrono::{DateTime, SecondsFormat, Utc};
 use derive_builder::Builder;
 use url::Url;
+pub use url;
 
 use quick_xml::{
     events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event},
