@@ -48,6 +48,6 @@ fn main() {
         },
     ];
 
-    let result = Sitemap::into_str(&urls).unwrap();
+    let result = Sitemap::generate_str(&urls).unwrap();
     println!("{}", result);
 }

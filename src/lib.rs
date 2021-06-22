@@ -54,22 +54,25 @@
 //!        },
 //!    ];
 //!
-//!    let result = Sitemap::into_str(&urls).unwrap();
+//!    let result = Sitemap::generate_str(&urls).unwrap();
 //!    println!("{}", result);
 //! ```
 
 use chrono::{DateTime, SecondsFormat, Utc};
 use derive_builder::Builder;
-use url::Url;
 pub use url;
+use url::Url;
 
 use quick_xml::{
     events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event},
     Writer,
 };
 
+use quick_xml::Result;
 use std::fmt::Display;
 use std::io::Cursor;
+
+pub use quick_xml;
 
 /// How frequently the page is likely to change. This value provides general information to search engines and may not correlate exactly to how often they crawl the page.
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
@@ -146,19 +149,15 @@ impl UrlEntry {
 #[derive(Debug)]
 pub struct Sitemap;
 
-fn write_tag<T>(writer: &mut Writer<T>, tag: &str, text: &str)
+fn write_tag<T>(writer: &mut Writer<T>, tag: &str, text: &str) -> Result<()>
 where
     T: std::io::Write,
 {
-    writer
-        .write_event(Event::Start(BytesStart::borrowed_name(tag.as_bytes())))
-        .expect(&format!("error opening {}", tag));
-    writer
-        .write_event(Event::Text(BytesText::from_plain_str(text)))
-        .expect(&format!("error writing text to {}", tag));
-    writer
-        .write_event(Event::End(BytesEnd::borrowed(tag.as_bytes())))
-        .expect(&format!("error opening {}", tag));
+    writer.write_event(Event::Start(BytesStart::borrowed_name(tag.as_bytes())))?;
+    writer.write_event(Event::Text(BytesText::from_plain_str(text)))?;
+    writer.write_event(Event::End(BytesEnd::borrowed(tag.as_bytes())))?;
+
+    Ok(())
 }
 
 impl Sitemap {
@@ -166,66 +165,58 @@ impl Sitemap {
     ///
     /// It's recommended to use [`Sitemap::into_bytes`] or [`Sitemap::into_str`] if you need a
     /// String or a Vec<u8>.
-    pub fn generate<T>(inner_writer: T, urls: &[UrlEntry]) -> T
+    pub fn generate<T>(inner_writer: T, urls: &[UrlEntry]) -> Result<T>
     where
         T: std::io::Write,
     {
         let mut writer = Writer::new_with_indent(inner_writer, b' ', 4);
-        writer
-            .write_event(Event::Decl(BytesDecl::new(b"1.0", Some(b"UTF-8"), None)))
-            .expect("error creating xml decl");
+        writer.write_event(Event::Decl(BytesDecl::new(b"1.0", Some(b"UTF-8"), None)))?;
 
         let urlset_name = b"urlset";
         let mut urlset = BytesStart::borrowed_name(urlset_name);
         urlset.push_attribute(("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9"));
-        writer
-            .write_event(Event::Start(urlset))
-            .expect("error opening urlset");
+        writer.write_event(Event::Start(urlset))?;
 
         for entry in urls {
             writer
                 .write_event(Event::Start(BytesStart::borrowed_name(b"url")))
                 .expect("error opening url");
 
-            write_tag(&mut writer, "loc", entry.loc.as_str());
+            write_tag(&mut writer, "loc", entry.loc.as_str())?;
 
             if let Some(lastmod) = &entry.lastmod {
                 write_tag(
                     &mut writer,
                     "lastmod",
                     &lastmod.to_rfc3339_opts(SecondsFormat::Secs, true),
-                );
+                )?;
             }
             if let Some(priority) = &entry.priority {
-                write_tag(&mut writer, "priority", &format!("{:.1}", priority))
+                write_tag(&mut writer, "priority", &format!("{:.1}", priority))?;
             }
             if let Some(changefreq) = &entry.changefreq {
-                write_tag(&mut writer, "changefreq", &changefreq.to_string());
+                write_tag(&mut writer, "changefreq", &changefreq.to_string())?;
             }
 
-            writer
-                .write_event(Event::End(BytesEnd::borrowed(b"url")))
-                .expect("error closing url");
+            writer.write_event(Event::End(BytesEnd::borrowed(b"url")))?;
         }
 
-        writer
-            .write_event(Event::End(BytesEnd::borrowed(urlset_name)))
-            .expect("error closing urlset");
+        writer.write_event(Event::End(BytesEnd::borrowed(urlset_name)))?;
 
-        writer.into_inner()
+        Ok(writer.into_inner())
     }
 
     /// Generates the sitemap.
-    pub fn into_bytes(urls: &[UrlEntry]) -> Vec<u8> {
+    pub fn generate_bytes(urls: &[UrlEntry]) -> Result<Vec<u8>> {
         let inner = Cursor::new(Vec::new());
-        let result = Sitemap::generate(inner, urls);
-        result.into_inner()
+        let result = Sitemap::generate(inner, urls)?;
+        Ok(result.into_inner())
     }
 
     /// Generates the sitemap returning a string.
-    pub fn into_str(urls: &[UrlEntry]) -> Result<String, std::str::Utf8Error> {
-        let bytes = Sitemap::into_bytes(urls);
-        let res = std::str::from_utf8(&bytes)?;
+    pub fn generate_str(urls: &[UrlEntry]) -> Result<String> {
+        let bytes = Sitemap::generate_bytes(urls)?;
+        let res = std::str::from_utf8(&bytes).expect("to be valid utf8");
         Ok(res.to_owned())
     }
 }
@@ -285,7 +276,7 @@ mod tests {
             },
         ];
 
-        Sitemap::into_str(&urls).unwrap();
+        Sitemap::generate_str(&urls).unwrap();
     }
 
     #[test]
