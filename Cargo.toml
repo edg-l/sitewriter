@@ -16,3 +16,10 @@ chrono = "0.4.19"
 derive_builder = "0.10.0"
 quick-xml = "0.22.0"
 url = "2.2.1"
+
+[dev-dependencies]
+criterion = { version = "0.3.4", features = ["html_reports"] }
+
+[[bench]]
+name = "benchmark"
+harness = false
