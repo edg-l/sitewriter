@@ -1,6 +1,6 @@
 [package]
 name = "sitewriter"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Edgar <git@edgarluque.com>"]
 edition = "2018"
 description = "A sitemap writing library."
@@ -13,13 +13,19 @@ categories = ["parsing"]
 
 [dependencies]
 chrono = "0.4.19"
-derive_builder = "0.10.0"
+derive_builder = "0.10.2"
 quick-xml = "0.22.0"
-url = "2.2.1"
+url = "2.2.2"
 
 [dev-dependencies]
-criterion = { version = "0.3.4", features = ["html_reports"] }
+criterion = { version = "0.3.5", features = ["html_reports"] }
 
 [[bench]]
 name = "benchmark"
 harness = false
+
+[profile.bench]
+debug = true
+
+[profile.release]
+debug = true
