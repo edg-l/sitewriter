@@ -3,7 +3,7 @@
 //! [![Version](https://img.shields.io/crates/v/sitewriter)](https://crates.io/crates/sitewriter)
 //! [![Downloads](https://img.shields.io/crates/d/sitewriter)](https://crates.io/crates/sitewriter)
 //! [![License](https://img.shields.io/crates/l/sitewriter)](https://crates.io/crates/sitewriter)
-//! ![Rust](https://github.com/edg-l/sitewriter-rs/workflows/Rust/badge.svg)
+//! ![Rust](https://github.com/edg-l/sitewriter/workflows/Rust/badge.svg)
 //! [![Docs](https://docs.rs/sitewriter/badge.svg)](https://docs.rs/sitewriter)
 //!
 //! It uses the [quick-xml](https://github.com/tafia/quick-xml) so it should be fast.
