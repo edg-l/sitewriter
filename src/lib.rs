@@ -5,6 +5,7 @@
 //! [![License](https://img.shields.io/crates/l/sitewriter)](https://crates.io/crates/sitewriter)
 //! ![Rust](https://github.com/edg-l/sitewriter/workflows/Rust/badge.svg)
 //! [![Docs](https://docs.rs/sitewriter/badge.svg)](https://docs.rs/sitewriter)
+//! [![crev reviews](https://web.crev.dev/rust-reviews/badge/crev_count/sitewriter.svg)](https://web.crev.dev/rust-reviews/crate/sitewriter/)
 //!
 //! It uses the [quick-xml](https://github.com/tafia/quick-xml) so it should be fast.
 //!
@@ -63,6 +64,19 @@
 //!    let result = Sitemap::generate_str(&urls).unwrap();
 //!    println!("{}", result);
 //! ```
+//! 
+//! ## CREV - Rust code reviews - Raise awareness
+//! 
+//! Please, spread this info !\
+//! Open source code needs a community effort to express trustworthiness.\
+//! Start with reading the reviews of the crates you use on [web.crev.dev/rust-reviews/crates/](https://web.crev.dev/rust-reviews/crates/) \
+//! Than install the CLI [cargo-crev](https://github.com/crev-dev/cargo-crev)\. Follow the [Getting Started guide](https://github.com/crev-dev/cargo-crev/blob/master/cargo-crev/src/doc/getting_started.md). \
+//! On your Rust project, verify the trustworthiness of all dependencies, including transient dependencies with `cargo crev verify`\
+//! Write a new review ! \
+//! Describe the crates you trust. Or warn about the crate versions you think are dangerous.\
+//! Help other developers, inform them and share your opinion.\
+//! Use [cargo_crev_reviews](https://crates.io/crates/cargo_crev_reviews) to write reviews easily.
+
 
 use chrono::{DateTime, SecondsFormat, Utc};
 use derive_builder::Builder;
