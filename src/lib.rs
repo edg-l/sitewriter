@@ -174,7 +174,7 @@ where
 
 /// Generates the sitemap and saves it using the provided writer.
 ///
-/// It's recommended to use [`Sitemap::generate_bytes`] or [`Sitemap::generate_str`] if you need a
+/// It's recommended to use [`generate_bytes`] or [`generate_str`] if you need a
 /// String or a Vec<u8>.
 ///
 /// # Errors
