@@ -15,7 +15,7 @@ It uses the [quick-xml](https://github.com/tafia/quick-xml) so it should be fast
 
 ```rust
 use chrono::prelude::*;
-use sitewriter::*;
+use sitewriter::{ChangeFreq, UrlEntry, UrlEntryBuilder};
 
    let urls = vec![
        UrlEntryBuilder::default()
@@ -63,7 +63,7 @@ use sitewriter::*;
        },
    ];
 
-   let result = Sitemap::generate_str(&urls).unwrap();
+   let result = sitewriter::generate_str(&urls);
    println!("{}", result);
 ```
 
