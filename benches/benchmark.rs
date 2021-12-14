@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use sitewriter::*;
+use sitewriter::{ChangeFreq, UrlEntry, UrlEntryBuilder};
 
 fn benchmark(c: &mut Criterion) {
     use chrono::Utc;
@@ -52,11 +52,11 @@ fn benchmark(c: &mut Criterion) {
     ];
 
     c.bench_function("generate_str", |b| {
-        b.iter(|| Sitemap::generate_str(black_box(&urls)))
+        b.iter(|| sitewriter::generate_str(black_box(&urls)))
     });
 
     c.bench_function("generate_bytes", |b| {
-        b.iter(|| Sitemap::generate_bytes(black_box(&urls)))
+        b.iter(|| sitewriter::generate_bytes(black_box(&urls)))
     });
 }
 

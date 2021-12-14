@@ -1,5 +1,5 @@
 use chrono::prelude::*;
-use sitewriter::*;
+use sitewriter::{ChangeFreq, UrlEntry, UrlEntryBuilder};
 
 fn main() {
     let urls = vec![
@@ -48,6 +48,6 @@ fn main() {
         },
     ];
 
-    let result = Sitemap::generate_str(&urls).unwrap();
+    let result = sitewriter::generate_str(&urls);
     println!("{}", result);
 }

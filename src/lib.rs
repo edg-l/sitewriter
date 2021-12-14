@@ -13,7 +13,7 @@
 //!
 //! ```rust
 //! use chrono::prelude::*;
-//! use sitewriter::*;
+//! use sitewriter::{ChangeFreq, UrlEntry, UrlEntryBuilder};
 //!
 //!    let urls = vec![
 //!        UrlEntryBuilder::default()
@@ -61,12 +61,12 @@
 //!        },
 //!    ];
 //!
-//!    let result = Sitemap::generate_str(&urls).unwrap();
+//!    let result = sitewriter::generate_str(&urls);
 //!    println!("{}", result);
 //! ```
-//! 
+//!
 //! ## CREV - Rust code reviews - Raise awareness
-//! 
+//!
 //! Please, spread this info !\
 //! Open source code needs a community effort to express trustworthiness.\
 //! Start with reading the reviews of the crates you use on [web.crev.dev/rust-reviews/crates/](https://web.crev.dev/rust-reviews/crates/) \
@@ -77,25 +77,20 @@
 //! Help other developers, inform them and share your opinion.\
 //! Use [cargo_crev_reviews](https://crates.io/crates/cargo_crev_reviews) to write reviews easily.
 
-
 use chrono::{DateTime, SecondsFormat, Utc};
 use derive_builder::Builder;
-pub use url;
-use url::Url;
-
 use quick_xml::{
     events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event},
     Writer,
 };
+use std::{fmt::Display, io::Cursor};
 
-use quick_xml::Result;
-use std::fmt::Display;
-use std::io::Cursor;
+pub use quick_xml::Result;
+pub use url::Url;
 
-pub use quick_xml;
-
-/// How frequently the page is likely to change. This value provides general information to search engines and may not correlate exactly to how often they crawl the page.
-#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+/// How frequently the page is likely to change. This value provides general
+/// information to search engines and may not correlate exactly to how often they crawl the page.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum ChangeFreq {
     /// Changes each time it's accessed.
     Always,
@@ -129,7 +124,7 @@ impl Display for ChangeFreq {
 }
 
 /// A sitemap url entry.
-#[derive(Debug, Clone, Builder)]
+#[derive(Debug, Clone, Builder, PartialEq, PartialOrd)]
 #[builder(setter(strip_option))]
 pub struct UrlEntry {
     /// URL of the page.
@@ -150,7 +145,8 @@ pub struct UrlEntry {
 }
 
 impl UrlEntry {
-    pub fn new(
+    #[must_use]
+    pub const fn new(
         loc: Url,
         lastmod: Option<DateTime<Utc>>,
         changefreq: Option<ChangeFreq>,
@@ -165,10 +161,6 @@ impl UrlEntry {
     }
 }
 
-/// Struct that implements the sitemap generation function.
-#[derive(Debug)]
-pub struct Sitemap;
-
 fn write_tag<T>(writer: &mut Writer<T>, tag: &str, text: &str) -> Result<()>
 where
     T: std::io::Write,
@@ -180,65 +172,71 @@ where
     Ok(())
 }
 
-impl Sitemap {
-    /// Generates the sitemap and saves it using the provided writer.
-    ///
-    /// It's recommended to use [`Sitemap::into_bytes`] or [`Sitemap::into_str`] if you need a
-    /// String or a Vec<u8>.
-    pub fn generate<T>(inner_writer: T, urls: &[UrlEntry]) -> Result<T>
-    where
-        T: std::io::Write,
-    {
-        let mut writer = Writer::new_with_indent(inner_writer, b' ', 4);
-        writer.write_event(Event::Decl(BytesDecl::new(b"1.0", Some(b"UTF-8"), None)))?;
+/// Generates the sitemap and saves it using the provided writer.
+///
+/// It's recommended to use [`Sitemap::generate_bytes`] or [`Sitemap::generate_str`] if you need a
+/// String or a Vec<u8>.
+///
+/// # Errors
+///
+/// Will return `Err` if it fails to write to the writer.
+pub fn generate<T>(inner_writer: T, urls: &[UrlEntry]) -> Result<T>
+where
+    T: std::io::Write,
+{
+    let mut writer = Writer::new_with_indent(inner_writer, b' ', 4);
+    writer.write_event(Event::Decl(BytesDecl::new(b"1.0", Some(b"UTF-8"), None)))?;
 
-        let urlset_name = b"urlset";
-        let mut urlset = BytesStart::borrowed_name(urlset_name);
-        urlset.push_attribute(("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9"));
-        writer.write_event(Event::Start(urlset))?;
+    let urlset_name = b"urlset";
+    let mut urlset = BytesStart::borrowed_name(urlset_name);
+    urlset.push_attribute(("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9"));
+    writer.write_event(Event::Start(urlset))?;
 
-        for entry in urls {
-            writer
-                .write_event(Event::Start(BytesStart::borrowed_name(b"url")))
-                .expect("error opening url");
+    for entry in urls {
+        writer
+            .write_event(Event::Start(BytesStart::borrowed_name(b"url")))
+            .expect("error opening url");
 
-            write_tag(&mut writer, "loc", entry.loc.as_str())?;
+        write_tag(&mut writer, "loc", entry.loc.as_str())?;
 
-            if let Some(lastmod) = &entry.lastmod {
-                write_tag(
-                    &mut writer,
-                    "lastmod",
-                    &lastmod.to_rfc3339_opts(SecondsFormat::Secs, true),
-                )?;
-            }
-            if let Some(priority) = &entry.priority {
-                write_tag(&mut writer, "priority", &format!("{:.1}", priority))?;
-            }
-            if let Some(changefreq) = &entry.changefreq {
-                write_tag(&mut writer, "changefreq", &changefreq.to_string())?;
-            }
-
-            writer.write_event(Event::End(BytesEnd::borrowed(b"url")))?;
+        if let Some(lastmod) = &entry.lastmod {
+            write_tag(
+                &mut writer,
+                "lastmod",
+                &lastmod.to_rfc3339_opts(SecondsFormat::Secs, true),
+            )?;
+        }
+        if let Some(priority) = &entry.priority {
+            write_tag(&mut writer, "priority", &format!("{:.1}", priority))?;
+        }
+        if let Some(changefreq) = &entry.changefreq {
+            write_tag(&mut writer, "changefreq", &changefreq.to_string())?;
         }
 
-        writer.write_event(Event::End(BytesEnd::borrowed(urlset_name)))?;
-
-        Ok(writer.into_inner())
+        writer.write_event(Event::End(BytesEnd::borrowed(b"url")))?;
     }
 
-    /// Generates the sitemap.
-    pub fn generate_bytes(urls: &[UrlEntry]) -> Result<Vec<u8>> {
-        let inner = Cursor::new(Vec::new());
-        let result = Sitemap::generate(inner, urls)?;
-        Ok(result.into_inner())
-    }
+    writer.write_event(Event::End(BytesEnd::borrowed(urlset_name)))?;
 
-    /// Generates the sitemap returning a string.
-    pub fn generate_str(urls: &[UrlEntry]) -> Result<String> {
-        let bytes = Sitemap::generate_bytes(urls)?;
-        let res = std::str::from_utf8(&bytes).expect("to be valid utf8");
-        Ok(res.to_owned())
-    }
+    Ok(writer.into_inner())
+}
+
+/// Generates the sitemap.
+#[must_use]
+pub fn generate_bytes(urls: &[UrlEntry]) -> Vec<u8> {
+    let inner = Cursor::new(Vec::new());
+    let result = generate(inner, urls).expect(
+            "it should never error, please report this bug to https://github.com/edg-l/sitewriter/issues",
+        );
+    result.into_inner()
+}
+
+/// Generates the sitemap returning a string.
+#[must_use]
+pub fn generate_str(urls: &[UrlEntry]) -> String {
+    let bytes = generate_bytes(urls);
+    let res = std::str::from_utf8(&bytes).expect("to be valid utf8");
+    res.to_owned()
 }
 
 #[cfg(test)]
@@ -296,7 +294,7 @@ mod tests {
             },
         ];
 
-        Sitemap::generate_str(&urls).unwrap();
+        let _result = generate_str(&urls);
     }
 
     #[test]
