@@ -12,13 +12,13 @@ keywords = ["sitemap", "sitemapindex", "xml", "parser"]
 categories = ["parsing"]
 
 [dependencies]
-chrono = "0.4.19"
-derive_builder = "0.11.1"
-quick-xml = "0.22.0"
+chrono = "0.4.22"
+derive_builder = "0.11.2"
+quick-xml = "0.24.0"
 url = "2.2.2"
 
 [dev-dependencies]
-criterion = { version = "0.3.5", features = ["html_reports"] }
+criterion = { version = "0.3.6", features = ["html_reports"] }
 
 [[bench]]
 name = "benchmark"

@@ -165,9 +165,9 @@ fn write_tag<T>(writer: &mut Writer<T>, tag: &str, text: &str) -> Result<()>
 where
     T: std::io::Write,
 {
-    writer.write_event(Event::Start(BytesStart::borrowed_name(tag.as_bytes())))?;
-    writer.write_event(Event::Text(BytesText::from_plain_str(text)))?;
-    writer.write_event(Event::End(BytesEnd::borrowed(tag.as_bytes())))?;
+    writer.write_event(Event::Start(BytesStart::new(tag)))?;
+    writer.write_event(Event::Text(BytesText::new(text)))?;
+    writer.write_event(Event::End(BytesEnd::new(tag)))?;
 
     Ok(())
 }
@@ -185,16 +185,16 @@ where
     T: std::io::Write,
 {
     let mut writer = Writer::new_with_indent(inner_writer, b' ', 4);
-    writer.write_event(Event::Decl(BytesDecl::new(b"1.0", Some(b"UTF-8"), None)))?;
+    writer.write_event(Event::Decl(BytesDecl::new("1.0", Some("UTF-8"), None)))?;
 
-    let urlset_name = b"urlset";
-    let mut urlset = BytesStart::borrowed_name(urlset_name);
+    let urlset_name = "urlset";
+    let mut urlset = BytesStart::new(urlset_name);
     urlset.push_attribute(("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9"));
     writer.write_event(Event::Start(urlset))?;
 
     for entry in urls {
         writer
-            .write_event(Event::Start(BytesStart::borrowed_name(b"url")))
+            .write_event(Event::Start(BytesStart::new("url")))
             .expect("error opening url");
 
         write_tag(&mut writer, "loc", entry.loc.as_str())?;
@@ -213,10 +213,10 @@ where
             write_tag(&mut writer, "changefreq", &changefreq.to_string())?;
         }
 
-        writer.write_event(Event::End(BytesEnd::borrowed(b"url")))?;
+        writer.write_event(Event::End(BytesEnd::new("url")))?;
     }
 
-    writer.write_event(Event::End(BytesEnd::borrowed(urlset_name)))?;
+    writer.write_event(Event::End(BytesEnd::new(urlset_name)))?;
 
     Ok(writer.into_inner())
 }
