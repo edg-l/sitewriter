@@ -13,7 +13,7 @@ categories = ["parsing"]
 
 [dependencies]
 chrono = "0.4.22"
-derive_builder = "0.11.2"
+derive_builder = "0.12.0"
 quick-xml = "0.26.0"
 url = "2.3.1"
 
