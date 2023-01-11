@@ -23,7 +23,7 @@ fn main() {
             loc: "https://edgarluque.com/blog/sitewriter".parse().unwrap(),
             changefreq: Some(ChangeFreq::Never),
             priority: Some(0.5),
-            lastmod: Some(Utc.ymd(2020, 11, 22).and_hms(15, 10, 15)),
+            lastmod: Some(Utc.with_ymd_and_hms(2020, 12, 5, 15, 30, 0).unwrap()),
         },
         UrlEntry {
             loc: "https://edgarluque.com/blog/some-future-post"
@@ -31,9 +31,7 @@ fn main() {
                 .unwrap(),
             changefreq: Some(ChangeFreq::Never),
             priority: Some(0.5),
-            lastmod: Some(
-                Utc.from_utc_datetime(&Local.ymd(2020, 12, 5).and_hms(12, 30, 0).naive_utc()),
-            ),
+            lastmod: Some(Utc.with_ymd_and_hms(2020, 12, 5, 12, 30, 0).unwrap()),
         },
         // Entity escaping
         UrlEntry {
@@ -42,9 +40,7 @@ fn main() {
                 .unwrap(),
             changefreq: Some(ChangeFreq::Never),
             priority: Some(0.5),
-            lastmod: Some(
-                Utc.from_utc_datetime(&Local.ymd(2020, 12, 5).and_hms(12, 30, 0).naive_utc()),
-            ),
+            lastmod: Some(Utc.with_ymd_and_hms(2020, 12, 5, 12, 30, 0).unwrap()),
         },
     ];
 

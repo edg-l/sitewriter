@@ -1,6 +1,6 @@
 [package]
 name = "sitewriter"
-version = "0.5.4"
+version = "0.5.5"
 authors = ["Edgar <git@edgarluque.com>"]
 edition = "2021"
 description = "A sitemap writing library."
@@ -12,9 +12,9 @@ keywords = ["sitemap", "sitemapindex", "xml", "parser"]
 categories = ["parsing"]
 
 [dependencies]
-chrono = "0.4.22"
-derive_builder = "0.11.2"
-quick-xml = "0.26.0"
+chrono = "0.4.23"
+derive_builder = "0.12.0"
+quick-xml = "0.27.1"
 url = "2.3.1"
 
 [dev-dependencies]
