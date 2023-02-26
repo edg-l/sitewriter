@@ -64,18 +64,13 @@
 //! let result = sitewriter::generate_str(&urls);
 //! println!("{}", result);
 //! ```
-//!
-//! ## CREV - Rust code reviews - Raise awareness
-//!
-//! Please, spread this info !\
-//! Open source code needs a community effort to express trustworthiness.\
-//! Start with reading the reviews of the crates you use on [web.crev.dev/rust-reviews/crates/](https://web.crev.dev/rust-reviews/crates/) \
-//! Than install the CLI [cargo-crev](https://github.com/crev-dev/cargo-crev)\. Follow the [Getting Started guide](https://github.com/crev-dev/cargo-crev/blob/master/cargo-crev/src/doc/getting_started.md). \
-//! On your Rust project, verify the trustworthiness of all dependencies, including transient dependencies with `cargo crev verify`\
-//! Write a new review ! \
-//! Describe the crates you trust. Or warn about the crate versions you think are dangerous.\
-//! Help other developers, inform them and share your opinion.\
-//! Use [cargo_crev_reviews](https://crates.io/crates/cargo_crev_reviews) to write reviews easily.
+
+#![forbid(unsafe_code)]
+#![deny(missing_docs)]
+#![deny(warnings)]
+#![deny(clippy::nursery)]
+#![deny(clippy::pedantic)]
+#![deny(clippy::all)]
 
 use chrono::{DateTime, SecondsFormat, Utc};
 use derive_builder::Builder;
@@ -111,13 +106,13 @@ pub enum ChangeFreq {
 impl Display for ChangeFreq {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let what = match self {
-            ChangeFreq::Always => "always",
-            ChangeFreq::Hourly => "hourly",
-            ChangeFreq::Daily => "daily",
-            ChangeFreq::Weekly => "weekly",
-            ChangeFreq::Monthly => "monthly",
-            ChangeFreq::Yearly => "yearly",
-            ChangeFreq::Never => "never",
+            Self::Always => "always",
+            Self::Hourly => "hourly",
+            Self::Daily => "daily",
+            Self::Weekly => "weekly",
+            Self::Monthly => "monthly",
+            Self::Yearly => "yearly",
+            Self::Never => "never",
         };
         f.write_str(what)
     }
@@ -145,6 +140,7 @@ pub struct UrlEntry {
 }
 
 impl UrlEntry {
+    /// Create a new url entry.
     #[must_use]
     pub const fn new(
         loc: Url,
@@ -207,7 +203,7 @@ where
             )?;
         }
         if let Some(priority) = &entry.priority {
-            write_tag(&mut writer, "priority", &format!("{:.1}", priority))?;
+            write_tag(&mut writer, "priority", &format!("{priority:.1}"))?;
         }
         if let Some(changefreq) = &entry.changefreq {
             write_tag(&mut writer, "changefreq", &changefreq.to_string())?;
@@ -241,7 +237,7 @@ pub fn generate_str(urls: &[UrlEntry]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
+    use crate::{generate_str, ChangeFreq, UrlEntry, UrlEntryBuilder};
 
     #[test]
     fn it_works() {
