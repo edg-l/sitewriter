@@ -1,6 +1,6 @@
 [package]
 name = "sitewriter"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Edgar <git@edgarluque.com>"]
 edition = "2021"
 description = "A sitemap writing library."
@@ -10,15 +10,16 @@ repository = "https://github.com/edg-l/sitewriter"
 license = "MIT"
 keywords = ["sitemap", "sitemapindex", "xml", "parser"]
 categories = ["parsing"]
+resolver = "2"
 
 [dependencies]
-chrono = "0.4.24"
+chrono = { version = "0.4.24", default-features = false, features = ["std", "clock"] }
 derive_builder = "0.12.0"
-quick-xml = "0.28.2"
+quick-xml = { version = "0.29.0", default-features = false }
 url = "2.3.1"
 
 [dev-dependencies]
-criterion = { version = "0.4.0", features = ["html_reports"] }
+criterion = { version = "0.5.1", features = ["html_reports"] }
 
 [[bench]]
 name = "benchmark"
