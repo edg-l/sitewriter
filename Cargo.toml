@@ -13,7 +13,7 @@ categories = ["parsing"]
 resolver = "2"
 
 [dependencies]
-chrono = { version = "0.4.24", default-features = false, features = ["std", "clock"] }
+chrono = { version = "0.4.28", default-features = false, features = ["std", "clock"] }
 derive_builder = "0.12.0"
 quick-xml = { version = "0.30.0", default-features = false }
 url = "2.3.1"
