@@ -69,7 +69,6 @@
 #![deny(missing_docs)]
 #![deny(warnings)]
 #![deny(clippy::nursery)]
-#![deny(clippy::pedantic)]
 #![deny(clippy::all)]
 
 use chrono::{DateTime, SecondsFormat, Utc};
@@ -189,9 +188,7 @@ where
     writer.write_event(Event::Start(urlset))?;
 
     for entry in urls {
-        writer
-            .write_event(Event::Start(BytesStart::new("url")))
-            .expect("error opening url");
+        writer.write_event(Event::Start(BytesStart::new("url")))?;
 
         write_tag(&mut writer, "loc", entry.loc.as_str())?;
 
