@@ -1,5 +1,8 @@
 {
   "styles": {
     "theme": "axodark"
+  },
+  "build": {
+    "path_prefix": "sitewriter"
   }
 }
