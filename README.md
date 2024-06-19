@@ -7,7 +7,6 @@
 [![License](https://img.shields.io/crates/l/sitewriter)](https://crates.io/crates/sitewriter)
 ![Rust](https://github.com/edg-l/sitewriter/workflows/Rust/badge.svg)
 [![Docs](https://docs.rs/sitewriter/badge.svg)](https://docs.rs/sitewriter)
-[![crev reviews](https://web.crev.dev/rust-reviews/badge/crev_count/sitewriter.svg)](https://web.crev.dev/rust-reviews/crate/sitewriter/)
 
 It uses the [quick-xml](https://github.com/tafia/quick-xml) so it should be fast.
 
